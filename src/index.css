@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+}
+.checkbox-label input {
+  margin-right: 8px;
+}
