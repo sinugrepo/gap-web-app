@@ -4,6 +4,7 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import FormData from "form-data";
+import Swal from "sweetalert2";
 import "./index.css";
 import "./App.css";
 
@@ -23,7 +24,7 @@ function App() {
   };
 
   const [intellectualWeights, setIntellectualWeights] = useState(
-    getStoredValue('intellectualWeights', {
+    getStoredValue("intellectualWeights", {
       CS: 3,
       VI: 3,
       SB: 4,
@@ -38,7 +39,7 @@ function App() {
   );
 
   const [workAttitudeWeights, setWorkAttitudeWeights] = useState(
-    getStoredValue('workAttitudeWeights', {
+    getStoredValue("workAttitudeWeights", {
       EP: 3,
       KTJ: 4,
       KH: 2,
@@ -49,7 +50,7 @@ function App() {
   );
 
   const [behaviorWeights, setBehaviorWeights] = useState(
-    getStoredValue('behaviorWeights', {
+    getStoredValue("behaviorWeights", {
       D: 3,
       I: 3,
       S: 4,
@@ -58,7 +59,7 @@ function App() {
   );
 
   const [percentages, setPercentages] = useState(
-    getStoredValue('percentages', {
+    getStoredValue("percentages", {
       coreFactor: 60,
       secondaryFactor: 40,
       intellectual: 20,
@@ -68,7 +69,7 @@ function App() {
   );
 
   const [coreFactors, setCoreFactors] = useState(
-    getStoredValue('coreFactors', {
+    getStoredValue("coreFactors", {
       intellectual: {
         CS: false,
         VI: false,
@@ -110,11 +111,15 @@ function App() {
 
   useEffect(() => {
     // Ambil data dari localStorage jika ada
-    const storedIntellectualWeights = localStorage.getItem('intellectualWeights');
-    const storedWorkAttitudeWeights = localStorage.getItem('workAttitudeWeights');
-    const storedBehaviorWeights = localStorage.getItem('behaviorWeights');
-    const storedPercentages = localStorage.getItem('percentages');
-    const storedCoreFactors = localStorage.getItem('coreFactors');
+    const storedIntellectualWeights = localStorage.getItem(
+      "intellectualWeights"
+    );
+    const storedWorkAttitudeWeights = localStorage.getItem(
+      "workAttitudeWeights"
+    );
+    const storedBehaviorWeights = localStorage.getItem("behaviorWeights");
+    const storedPercentages = localStorage.getItem("percentages");
+    const storedCoreFactors = localStorage.getItem("coreFactors");
 
     if (storedIntellectualWeights) {
       setIntellectualWeights(JSON.parse(storedIntellectualWeights));
@@ -135,12 +140,24 @@ function App() {
 
   useEffect(() => {
     // Simpan data ke localStorage ketika ada perubahan
-    localStorage.setItem('intellectualWeights', JSON.stringify(intellectualWeights));
-    localStorage.setItem('workAttitudeWeights', JSON.stringify(workAttitudeWeights));
-    localStorage.setItem('behaviorWeights', JSON.stringify(behaviorWeights));
-    localStorage.setItem('percentages', JSON.stringify(percentages));
-    localStorage.setItem('coreFactors', JSON.stringify(coreFactors));
-  }, [intellectualWeights, workAttitudeWeights, behaviorWeights, percentages, coreFactors]);
+    localStorage.setItem(
+      "intellectualWeights",
+      JSON.stringify(intellectualWeights)
+    );
+    localStorage.setItem(
+      "workAttitudeWeights",
+      JSON.stringify(workAttitudeWeights)
+    );
+    localStorage.setItem("behaviorWeights", JSON.stringify(behaviorWeights));
+    localStorage.setItem("percentages", JSON.stringify(percentages));
+    localStorage.setItem("coreFactors", JSON.stringify(coreFactors));
+  }, [
+    intellectualWeights,
+    workAttitudeWeights,
+    behaviorWeights,
+    percentages,
+    coreFactors,
+  ]);
 
   const handlePercentageChange = (key, value) => {
     setPercentages({ ...percentages, [key]: value });
@@ -233,6 +250,12 @@ function App() {
       })
       .catch((error) => {
         if (error.response) {
+          Swal.fire({
+            title: "Error!",
+            text: "Data Tidak Valid, Tolong Cek Kembali Input Bobot!",
+            icon: "error",
+            confirmButtonText: "Close",
+          });
           console.log("Error Response Data:", error.response.data);
           console.log("Error Response Status:", error.response.status);
           console.log("Error Response Headers:", error.response.headers);
@@ -264,277 +287,286 @@ function App() {
 
   return (
     <div className="bg-gray-100 p-8">
-    <div className="max-w-5xl mx-auto bg-white p-8 shadow-md rounded-lg">
-      <h1 className="text-center text-[20px] mb-12">
-        <b>Sistem SPK Metode Gap Competence</b>
-      </h1>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lg font-semibold">Import Data Excel</h1>
-        <button className="text-sm text-blue-500">
-          Belum Punya Template Data?{" "}
-          <a href="https://docs.google.com/spreadsheets/d/1GRYVaUnN3QY5ogVPs3k0gfz88d1CocA3/edit?usp=sharing&ouid=115585759759635127920&rtpof=true&sd=true" target="_blank" 
-  rel="noopener noreferrer"><span className="font-semibold">Download Disini</span></a>
-        </button>
-      </div>
-      <div className="border p-4 mb-6 rounded-lg">
-        <input
-          type="file"
-          className="px-4 py-2 rounded"
-          onChange={handleDocChange}
-        />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div>
-          <h2 className="font-semibold mb-2">
-            Bobot Kriteria Kapasitas Intelektual
-          </h2>
-          <div className="border p-4 rounded-lg">
-            {Object.keys(intellectualWeights).map((key, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center mb-2"
-              >
-                <span>{key}</span>
-                <input
-                  type="number"
-                  value={intellectualWeights[key]}
-                  onChange={(e) =>
-                    handleWeightChange("intellectual", key, e.target.value)
-                  }
-                  className="bg-gray-300 w-12 text-center rounded"
-                  min="1"
-                  max="5"
-                />
-              </div>
-            ))}
-          </div>
+      <div className="max-w-5xl mx-auto bg-white p-8 shadow-md rounded-lg">
+        <div className="bg-blue-200 p-4 flex justify-center items-center mb-12">
+          <h1 className="text-center text-[20px]">
+            <b>Sistem SPK Metode Gap Competence</b>
+          </h1>
         </div>
-        <div>
-          <h2 className="font-semibold mb-2">Bobot Kriteria Sikap Kerja</h2>
-          <div className="border p-4 rounded-lg">
-            {Object.keys(workAttitudeWeights).map((key, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center mb-2"
-              >
-                <span>{key}</span>
-                <input
-                  type="number"
-                  value={workAttitudeWeights[key]}
-                  onChange={(e) =>
-                    handleWeightChange("workAttitude", key, e.target.value)
-                  }
-                  className="bg-gray-300 w-12 text-center rounded"
-                  min="1"
-                  max="5"
-                />
-              </div>
-            ))}
-          </div>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-lg font-semibold">Import Data Excel</h1>
+          <button className="text-sm text-blue-500">
+            Belum Punya Template Data?{" "}
+            <a
+              href="https://docs.google.com/spreadsheets/d/1GRYVaUnN3QY5ogVPs3k0gfz88d1CocA3/edit?usp=sharing&ouid=115585759759635127920&rtpof=true&sd=true"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="font-semibold">Download Disini</span>
+            </a>
+          </button>
         </div>
-        <div>
-          <h2 className="font-semibold mb-2">Bobot Kriteria Perilaku</h2>
-          <div className="border p-4 rounded-lg">
-            {Object.keys(behaviorWeights).map((key, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center mb-2"
-              >
-                <span>{key}</span>
-                <input
-                  type="number"
-                  value={behaviorWeights[key]}
-                  onChange={(e) =>
-                    handleWeightChange("behavior", key, e.target.value)
-                  }
-                  className="bg-gray-300 w-12 text-center rounded"
-                  min="1"
-                  max="5"
-                />
-              </div>
-            ))}
-          </div>
+        <div className="border p-4 mb-6 rounded-lg">
+          <input
+            type="file"
+            className="px-4 py-2 rounded"
+            onChange={handleDocChange}
+          />
         </div>
-        <div>
-          <h2 className="font-semibold mb-2">Prosentase</h2>
-          <div className="border p-4 rounded-lg">
-            {[
-              { label: "Core Factor", key: "coreFactor" },
-              { label: "Secondary Factor", key: "secondaryFactor" },
-              { label: "Kapasitas Intelektual", key: "intellectual" },
-              { label: "Sikap Kerja", key: "workAttitude" },
-              { label: "Perilaku", key: "behavior" },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center mb-2"
-              >
-                <span>{item.label}</span>
-                <div className="flex items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div>
+            <h2 className="font-semibold mb-2">
+              Bobot Kriteria Kapasitas Intelektual
+            </h2>
+            <div className="border p-4 rounded-lg">
+              {Object.keys(intellectualWeights).map((key, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{key}</span>
                   <input
                     type="number"
-                    value={percentages[item.key]}
+                    value={intellectualWeights[key]}
                     onChange={(e) =>
-                      handlePercentageChange(item.key, e.target.value)
+                      handleWeightChange("intellectual", key, e.target.value)
                     }
-                    className="bg-gray-300 w-16 text-center rounded mr-2"
+                    className="bg-gray-300 w-12 text-center rounded"
                     min="1"
-                    max="100"
+                    max="5"
                   />
-                  <span>%</span>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Bobot Kriteria Sikap Kerja</h2>
+            <div className="border p-4 rounded-lg">
+              {Object.keys(workAttitudeWeights).map((key, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{key}</span>
+                  <input
+                    type="number"
+                    value={workAttitudeWeights[key]}
+                    onChange={(e) =>
+                      handleWeightChange("workAttitude", key, e.target.value)
+                    }
+                    className="bg-gray-300 w-12 text-center rounded"
+                    min="1"
+                    max="5"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Bobot Kriteria Perilaku</h2>
+            <div className="border p-4 rounded-lg">
+              {Object.keys(behaviorWeights).map((key, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{key}</span>
+                  <input
+                    type="number"
+                    value={behaviorWeights[key]}
+                    onChange={(e) =>
+                      handleWeightChange("behavior", key, e.target.value)
+                    }
+                    className="bg-gray-300 w-12 text-center rounded"
+                    min="1"
+                    max="5"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Prosentase</h2>
+            <div className="border p-4 rounded-lg">
+              {[
+                { label: "Core Factor", key: "coreFactor" },
+                { label: "Secondary Factor", key: "secondaryFactor" },
+                { label: "Kapasitas Intelektual", key: "intellectual" },
+                { label: "Sikap Kerja", key: "workAttitude" },
+                { label: "Perilaku", key: "behavior" },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{item.label}</span>
+                  <div className="flex items-center">
+                    <input
+                      type="number"
+                      value={percentages[item.key]}
+                      onChange={(e) =>
+                        handlePercentageChange(item.key, e.target.value)
+                      }
+                      className="bg-gray-300 w-16 text-center rounded mr-2"
+                      min="1"
+                      max="100"
+                    />
+                    <span>%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div>
+            <h2 className="font-semibold mb-2">
+              Kapasitas Intelektual Core Factor
+            </h2>
+            {Object.keys(coreFactors.intellectual).map((key, index) => (
+              <label key={index} className="checkbox-label mb-2">
+                <input
+                  type="checkbox"
+                  checked={coreFactors.intellectual[key]}
+                  onChange={() => handleCheckboxChange("intellectual", key)}
+                />
+                {key} (
+                {
+                  {
+                    CS: "Common Sense",
+                    VI: "Verbalisasi Ide",
+                    SB: "Sistematika Berfikir",
+                    PSR: "Penalaran dan Solusi Real",
+                    KN: "Konsenstrasi",
+                    LP: "Logika Praktis",
+                    FB: "Fleksibilitas Berfikir",
+                    IK: "Imajinasi Kreatif",
+                    ANT: "Imajinasi Kreatif",
+                    IQ: "Potensi Kecerdasan",
+                  }[key]
+                }
+                )
+              </label>
+            ))}
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Sikap Kerja Core Factor</h2>
+            {Object.keys(coreFactors.workAttitude).map((key, index) => (
+              <label key={index} className="checkbox-label mb-2">
+                <input
+                  type="checkbox"
+                  checked={coreFactors.workAttitude[key]}
+                  onChange={() => handleCheckboxChange("workAttitude", key)}
+                />
+                {key} (
+                {
+                  {
+                    EP: "Energi Psikis",
+                    KTJ: "Ketelitian dan Tanggung Jawab",
+                    KH: "Kehati-hatian",
+                    PP: "Pengendalian Perasaan",
+                    DB: "Dorongan Berprestasi",
+                    VP: "Vitalitas dan Perencana",
+                  }[key]
+                }
+                )
+              </label>
+            ))}
+          </div>
+          <div>
+            <h2 className="font-semibold mb-2">Perilaku Core Factor</h2>
+            {Object.keys(coreFactors.behavior).map((key, index) => (
+              <label key={index} className="checkbox-label mb-2">
+                <input
+                  type="checkbox"
+                  checked={coreFactors.behavior[key]}
+                  onChange={() => handleCheckboxChange("behavior", key)}
+                />
+                {key} (
+                {
+                  {
+                    D: "Dominance",
+                    I: "Influences",
+                    S: "Steadiness",
+                    C: "Compliance",
+                  }[key]
+                }
+                )
+              </label>
             ))}
           </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div>
-          <h2 className="font-semibold mb-2">
-            Kapasitas Intelektual Core Factor
-          </h2>
-          {Object.keys(coreFactors.intellectual).map((key, index) => (
-            <label key={index} className="checkbox-label mb-2">
-              <input
-                type="checkbox"
-                checked={coreFactors.intellectual[key]}
-                onChange={() => handleCheckboxChange("intellectual", key)}
-              />
-              {key} (
-              {
-                {
-                  CS: "Common Sense",
-                  VI: "Verbalisasi Ide",
-                  SB: "Sistematika Berfikir",
-                  PSR: "Penalaran dan Solusi Real",
-                  KN: "Konsenstrasi",
-                  LP: "Logika Praktis",
-                  FB: "Fleksibilitas Berfikir",
-                  IK: "Imajinasi Kreatif",
-                  ANT: "Imajinasi Kreatif",
-                  IQ: "Potensi Kecerdasan",
-                }[key]
-              }
-              )
-            </label>
-          ))}
-        </div>
-        <div>
-          <h2 className="font-semibold mb-2">Sikap Kerja Core Factor</h2>
-          {Object.keys(coreFactors.workAttitude).map((key, index) => (
-            <label key={index} className="checkbox-label mb-2">
-              <input
-                type="checkbox"
-                checked={coreFactors.workAttitude[key]}
-                onChange={() => handleCheckboxChange("workAttitude", key)}
-              />
-              {key} (
-              {
-                {
-                  EP: "Energi Psikis",
-                  KTJ: "Ketelitian dan Tanggung Jawab",
-                  KH: "Kehati-hatian",
-                  PP: "Pengendalian Perasaan",
-                  DB: "Dorongan Berprestasi",
-                  VP: "Vitalitas dan Perencana",
-                }[key]
-              }
-              )
-            </label>
-          ))}
-        </div>
-        <div>
-          <h2 className="font-semibold mb-2">Perilaku Core Factor</h2>
-          {Object.keys(coreFactors.behavior).map((key, index) => (
-            <label key={index} className="checkbox-label mb-2">
-              <input
-                type="checkbox"
-                checked={coreFactors.behavior[key]}
-                onChange={() => handleCheckboxChange("behavior", key)}
-              />
-              {key} (
-              {
-                {
-                  D: "Dominance",
-                  I: "Influences",
-                  S: "Steadiness",
-                  C: "Compliance",
-                }[key]
-              }
-              )
-            </label>
-          ))}
-        </div>
-      </div>
-      <button
-        className="bg-blue-500 text-white w-full py-4 rounded-lg hover:bg-blue-600 transition duration-300"
-        onClick={handleSubmit}
-      >
-        SUBMIT
-      </button>
-      <div className="container mx-auto mt-5">
-                  {/* Konten lainnya */}
-                  <button
+        <button
+          className="bg-blue-500 text-white w-full py-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          onClick={handleSubmit}
+        >
+          SUBMIT
+        </button>
+        <div className="container mx-auto mt-5">
+          {/* Konten lainnya */}
+          <button
             className="bg-green-500 text-white py-2 px-4 rounded-lg float-right"
             onClick={exportToPDF}
           >
             Ekspor ke PDF
           </button>
           {/* Tabel dan konten lainnya */}
-        <h1 className="text-2xl font-bold mb-4">Data Karyawan</h1>
-        <div className="overflow-x-auto">
-          <table
-            {...getTableProps()}
-            className="min-w-full bg-white border border-gray-300"
-          >
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr
-                  {...headerGroup.getHeaderGroupProps()}
-                  className="bg-gray-200"
-                >
-                  {headerGroup.headers.map((column) => (
-                    <th
-                      {...column.getHeaderProps(column.getSortByToggleProps())}
-                      className="py-3 px-6 text-left cursor-pointer"
-                    >
-                      {column.render("Header")}
-                      <span>
-                        {column.isSorted
-                          ? column.isSortedDesc
-                            ? " 🔽"
-                            : " 🔼"
-                          : ""}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()} className="text-gray-600 text-sm">
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
+          <h1 className="text-2xl font-bold mb-4">Data Karyawan</h1>
+          <div className="overflow-x-auto">
+            <table
+              {...getTableProps()}
+              className="min-w-full bg-white border border-gray-300"
+            >
+              <thead>
+                {headerGroups.map((headerGroup) => (
                   <tr
-                    {...row.getRowProps()}
-                    className="border-b border-gray-300 hover:bg-gray-100"
+                    {...headerGroup.getHeaderGroupProps()}
+                    className="bg-gray-200"
                   >
-                    {row.cells.map((cell) => (
-                      <td
-                        {...cell.getCellProps()}
-                        className="py-3 px-6 whitespace-nowrap"
+                    {headerGroup.headers.map((column) => (
+                      <th
+                        {...column.getHeaderProps(
+                          column.getSortByToggleProps()
+                        )}
+                        className="py-3 px-6 text-left cursor-pointer"
                       >
-                        {cell.render("Cell")}
-                      </td>
+                        {column.render("Header")}
+                        <span>
+                          {column.isSorted
+                            ? column.isSortedDesc
+                              ? " 🔽"
+                              : " 🔼"
+                            : ""}
+                        </span>
+                      </th>
                     ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()} className="text-gray-600 text-sm">
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr
+                      {...row.getRowProps()}
+                      className="border-b border-gray-300 hover:bg-gray-100"
+                    >
+                      {row.cells.map((cell) => (
+                        <td
+                          {...cell.getCellProps()}
+                          className="py-3 px-6 whitespace-nowrap"
+                        >
+                          {cell.render("Cell")}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
