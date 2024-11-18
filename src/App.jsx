@@ -229,7 +229,7 @@ function App() {
     data.append("sikapKerjaCF", JSON.stringify(sikapKerjaCF, null, 2));
     data.append("perilakuCF", JSON.stringify(perilakuCF, null, 2));
     data.append("prosentaseCF", percentages.coreFactor);
-    data.append("prosentaseSF", 100 - percentages.coreFactor);
+    data.append("prosentaseSF", percentages.secondaryFactor);
     data.append("prosentaseKapasitasIntelektual", percentages.intellectual);
     data.append("prosentaseSikapKerja", percentages.workAttitude);
     data.append("prosentasePerilaku", percentages.behavior);
@@ -242,14 +242,24 @@ function App() {
       maxBodyLength: Infinity,
     };
 
+    Swal.fire({
+      title: "Mengirim Data...",
+      text: "Mohon tunggu, sedang memproses perhitungan.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
     axios
-      .post("http://localhost:3001/upload", data, config)
+      .post("http://localhost:3000/upload", data, config)
       .then((response) => {
         console.log(JSON.stringify(response.data));
         setDataGap(response.data.data);
+        Swal.close()
       })
       .catch((error) => {
         if (error.response) {
+          Swal.close()
           Swal.fire({
             title: "Error!",
             text: "Data Tidak Valid, Tolong Cek Kembali Input Bobot!",
