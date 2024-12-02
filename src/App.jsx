@@ -7,6 +7,8 @@ import FormData from "form-data";
 import Swal from "sweetalert2";
 import "./index.css";
 import "./App.css";
+import Navbar from "./component/navbar.jsx";
+
 
 function App() {
   const [dataGap, setDataGap] = useState([]);
@@ -180,7 +182,10 @@ function App() {
 
     autoTable(doc, {
       head: [["ID Karyawan", "Total Hasil Akhir"]],
-      body: dataGap.map((item) => [item.Id_Karyawan, item.totalHasilAkhir]),
+      body: dataGap.map((item) => [
+        item.Id_Karyawan,
+        parseFloat(item.totalHasilAkhir).toFixed(2),
+      ]),
     });
 
     doc.save("data_karyawan.pdf");
@@ -251,15 +256,15 @@ function App() {
       },
     });
     axios
-      .post("http://localhost:3000/upload", data, config)
+      .post("http://localhost:3001/upload", data, config)
       .then((response) => {
         console.log(JSON.stringify(response.data));
         setDataGap(response.data.data);
-        Swal.close()
+        Swal.close();
       })
       .catch((error) => {
         if (error.response) {
-          Swal.close()
+          Swal.close();
           Swal.fire({
             title: "Error!",
             text: "Data Tidak Valid, Tolong Cek Kembali Input Bobot!",
@@ -292,20 +297,39 @@ function App() {
     []
   );
 
+  // Mencari kandidat dengan skor tertinggi dan terendah
+  const highest = dataGap.reduce((prev, current) => {
+    return parseFloat(prev.totalHasilAkhir) >
+      parseFloat(current.totalHasilAkhir)
+      ? prev
+      : current;
+  }, dataGap[0]);
+
+  const lowest = dataGap.reduce((prev, current) => {
+    return parseFloat(prev.totalHasilAkhir) <
+      parseFloat(current.totalHasilAkhir)
+      ? prev
+      : current;
+  }, dataGap[0]);
+
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns, data: dataGap }, useSortBy);
 
   return (
     <div className="bg-gray-100 p-8">
       <div className="max-w-5xl mx-auto bg-white p-8 shadow-md rounded-lg">
-        <div className="bg-blue-200 p-4 flex justify-center items-center mb-12">
+        <Navbar />
+        <div className="bg-blue-200 p-4 flex justify-center items-center mb-12 mt-10">
           <h1 className="text-center text-[20px]">
-            <b>Sistem SPK Metode Gap Competence</b>
+            <b>
+              Aplikasi SPK Metode GAP KOMPETENSI (Studi Kasus : PT BEYF
+              BERSAUDARA)
+            </b>
           </h1>
         </div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-lg font-semibold">Import Data Excel</h1>
-          <button className="text-sm text-blue-500">
+          <p className="text-sm text-blue-500">
             Belum Punya Template Data?{" "}
             <a
               href="https://docs.google.com/spreadsheets/d/1GRYVaUnN3QY5ogVPs3k0gfz88d1CocA3/edit?usp=sharing&ouid=115585759759635127920&rtpof=true&sd=true"
@@ -314,8 +338,18 @@ function App() {
             >
               <span className="font-semibold">Download Disini</span>
             </a>
-          </button>
+          </p>
         </div>
+        <p className="text-sm text-blue-500 mb-5">
+          Ingin Baca Panduan Sistem?{" "}
+          <a
+            href="https://sinug.gitbook.io/sinug-docs/getting-started/quickstart"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="font-semibold">Lihat Disini</span>
+          </a>
+        </p>
         <div className="border p-4 mb-6 rounded-lg">
           <input
             type="file"
@@ -512,6 +546,27 @@ function App() {
         >
           SUBMIT
         </button>
+        <div className="p-6 bg-white shadow-md rounded-lg mt-4">
+          {dataGap.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold">Penjelasan</h3>
+              <p className="mt-2">
+                Kandidat dengan skor tertinggi adalah{" "}
+                <strong>{highest.Id_Karyawan}</strong> dengan skor{" "}
+                <strong>{highest.totalHasilAkhir}</strong>. Ini menunjukkan
+                bahwa dia adalah kandidat yang paling sesuai berdasarkan
+                kriteria penilaian yang telah ditetapkan.
+              </p>
+              <p className="mt-2">
+                Kandidat dengan skor terendah adalah{" "}
+                <strong>{lowest.Id_Karyawan}</strong> dengan skor{" "}
+                <strong>{lowest.totalHasilAkhir}</strong>. Ini menunjukkan bahwa
+                kandidat ini kurang memenuhi kriteria yang diharapkan
+                dibandingkan dengan kandidat lainnya.
+              </p>
+            </div>
+          )}
+        </div>
         <div className="container mx-auto mt-5">
           {/* Konten lainnya */}
           <button
